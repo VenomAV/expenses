@@ -5,8 +5,8 @@ import org.scalacheck.Prop.forAll
 import org.scalacheck.Gen
 import scalaz.{Failure, NonEmptyList, Success}
 
-object EmployeeShouldAlwaysHaveNameAndSurname extends Properties("Employee should always have name and surname") {
-  property("create with empty surname returns error") =
+object EmployeeSpec extends Properties("Employee") {
+  property("surname should not be empty") =
     forAll(Gen.alphaStr suchThat(!_.isEmpty)) {
       name => Employee.create(name, "") match {
         case Failure(NonEmptyList(head, _)) if "surname is empty".equals(head) => true
@@ -14,7 +14,7 @@ object EmployeeShouldAlwaysHaveNameAndSurname extends Properties("Employee shoul
       }
     }
 
-  property("create with empty name returns error") =
+  property("name should not be empty") =
     forAll(Gen.alphaStr suchThat(!_.isEmpty)) {
       surname => Employee.create("", surname) match {
         case Failure(NonEmptyList(head, _)) if "name is empty".equals(head) => true
@@ -25,7 +25,7 @@ object EmployeeShouldAlwaysHaveNameAndSurname extends Properties("Employee shoul
   property("create with not-empty name and surname returns Employee") =
     forAll(Gen.alphaStr suchThat(!_.isEmpty), Gen.alphaStr suchThat(!_.isEmpty)) {
       (name, surname) => Employee.create(name, surname) match {
-        case Success(employee) => name.equals(employee.name) && surname.equals(employee.surname)
+        case Success(Employee(_, n, s)) => n == name && s == surname
         case _ => false
       }
     }
