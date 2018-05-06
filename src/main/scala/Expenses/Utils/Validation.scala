@@ -25,4 +25,10 @@ object Validation {
     else
       value.successNel
   }
+
+  def nonEmptyList[T](errorMessage: String)(list: List[T]): ValidationNel[String, List[T]] =
+    list match {
+      case List(_, _) => list.successNel
+      case _ => errorMessage.failureNel
+    }
 }
