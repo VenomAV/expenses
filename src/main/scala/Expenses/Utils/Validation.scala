@@ -18,4 +18,11 @@ object Validation {
     else
       date.successNel
   }
+
+  def notNull[T](errorMessage: String)(value: T) : ValidationNel[String, T] = {
+    if (value == null)
+      errorMessage.failureNel
+    else
+      value.successNel
+  }
 }

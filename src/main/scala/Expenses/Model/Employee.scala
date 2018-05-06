@@ -8,23 +8,20 @@ import scalaz.ValidationNel
 import scalaz.Validation._
 import scalaz.Scalaz._
 
-/*
-Employee should always have name and surname
- */
 sealed case class Employee private(id : EmployeeId, name: String, surname: String)
 
 object Employee {
   type EmployeeId = UUID
 
+  private val validateId = Validation.notNull[EmployeeId]("id is null")(_)
   private val validateName = Validation.notEmptyString("name is empty")(_)
   private val validateSurname = Validation.notEmptyString("surname is empty")(_)
 
   def create(id: EmployeeId, name: String, surname: String) : ValidationNel[String, Employee] =
-    (validateName(name) |@| validateSurname(surname))(uncheckedCreate(id))
+    (validateId(id) |@|
+      validateName(name) |@|
+      validateSurname(surname))(new Employee(_, _, _))
 
   def create(name: String, surname: String) : ValidationNel[String, Employee] =
     create(UUID.randomUUID(), name, surname)
-
-  private def uncheckedCreate(id: EmployeeId)(name: String, surname: String) : Employee =
-    new Employee(id, name, surname)
 }
