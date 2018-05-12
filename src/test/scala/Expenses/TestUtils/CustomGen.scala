@@ -2,6 +2,7 @@ package Expenses.TestUtils
 
 import java.util.{Calendar, Date}
 
+import Expenses.Model.Employee
 import org.scalacheck.Gen
 import squants.market.Money
 
@@ -51,5 +52,13 @@ object CustomGen {
       list <- Gen.listOfN(n, notNullOrEmptyString)
     } yield {
       list.mkString(" ")
+    }
+
+  val employee : Gen[Employee] =
+    for {
+      name <- notNullOrEmptyString
+      surname <-notNullOrEmptyString
+    } yield {
+      Employee.create(name, surname)
     }
 }
