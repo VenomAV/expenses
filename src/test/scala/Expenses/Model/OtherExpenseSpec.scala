@@ -1,9 +1,10 @@
 package Expenses.Model
 
 import Expenses.TestUtils.CustomGen
+import cats.data.NonEmptyList
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Properties
-import scalaz.{Failure, NonEmptyList, Success}
+import cats.data.Validated.{Invalid, Valid}
 
 object OtherExpenseSpec extends Properties("OtherExpense") {
   property("description should contain more than 9 words") =
@@ -11,7 +12,7 @@ object OtherExpenseSpec extends Properties("OtherExpense") {
       CustomGen.calendarInThePast,
       CustomGen.sentence(maxWordCount = 9)) {
       (cost, date, description) => OtherExpense.create(cost, date.getTime, description) match {
-        case Failure(NonEmptyList(head, _)) if "description contains less than 10 words".equals(head) => true
+        case Invalid(NonEmptyList(head, _)) if "description contains less than 10 words".equals(head) => true
         case _ => false
       }
     }
@@ -21,7 +22,7 @@ object OtherExpenseSpec extends Properties("OtherExpense") {
       CustomGen.calendarInThePast,
       CustomGen.sentence(10, 100)) {
       (cost, date, description) => OtherExpense.create(cost, date.getTime, description) match {
-        case Success(OtherExpense(c, d, x)) => c == cost && d == date.getTime && x == description
+        case Valid(OtherExpense(c, d, x)) => c == cost && d == date.getTime && x == description
         case _ => false
       }
     }

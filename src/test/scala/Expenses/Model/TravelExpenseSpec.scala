@@ -1,9 +1,10 @@
 package Expenses.Model
 
 import Expenses.TestUtils.CustomGen
+import cats.data.NonEmptyList
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Gen, Properties}
-import scalaz.{Failure, NonEmptyList, Success}
+import cats.data.Validated.{Invalid, Valid}
 
 object TravelExpenseSpec extends Properties("TravelExpense") {
   property("date should be less or equal to today") =
@@ -12,7 +13,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       Gen.alphaNumStr,
       Gen.alphaNumStr) {
       (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
-        case Failure(NonEmptyList(head, _)) if "date cannot be in the future".equals(head) => true
+        case Invalid(NonEmptyList(head, _)) if "date cannot be in the future".equals(head) => true
         case _ => false
       }
     }
@@ -23,7 +24,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.notNullOrEmptyString,
       CustomGen.nullOrEmptyString) {
       (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
-        case Failure(NonEmptyList(head, _)) if "to is null or empty".equals(head) => true
+        case Invalid(NonEmptyList(head, _)) if "to is null or empty".equals(head) => true
         case _ => false
       }
     }
@@ -34,7 +35,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.nullOrEmptyString,
       CustomGen.notNullOrEmptyString) {
       (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
-        case Failure(NonEmptyList(head, _)) if "from is null or empty".equals(head) => true
+        case Invalid(NonEmptyList(head, _)) if "from is null or empty".equals(head) => true
         case _ => false
       }
     }
@@ -45,7 +46,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.notNullOrEmptyString,
       CustomGen.notNullOrEmptyString) {
       (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
-        case Failure(NonEmptyList(head, _)) if "cost is less or equal to zero".equals(head) => true
+        case Invalid(NonEmptyList(head, _)) if "cost is less or equal to zero".equals(head) => true
         case _ => false
       }
     }
@@ -56,7 +57,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.notNullOrEmptyString,
       CustomGen.notNullOrEmptyString) {
       (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
-        case Success(TravelExpense(c, d, f, t)) =>
+        case Valid(TravelExpense(c, d, f, t)) =>
           c == cost && d == date.getTime && f == from && t == to
         case _ => false
       }

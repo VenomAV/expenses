@@ -3,7 +3,7 @@ package Expenses.Model
 import java.util.UUID
 
 import Expenses.Model.Claim.ClaimId
-import scalaz.NonEmptyList
+import cats.data.NonEmptyList
 
 sealed trait Claim {
   def Id: ClaimId

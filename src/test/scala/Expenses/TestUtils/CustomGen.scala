@@ -4,7 +4,7 @@ import java.util.{Calendar, Date}
 
 import Expenses.Model.Employee
 import org.scalacheck.Gen
-import scalaz.{Failure, Success}
+import cats.data.Validated.{Invalid, Valid}
 import squants.market.Money
 
 object CustomGen {
@@ -61,8 +61,8 @@ object CustomGen {
       surname <- notNullOrEmptyString
     } yield {
        Employee.create(name, surname) match {
-         case Success(employee) => employee
-         case Failure(_) => throw new Exception("Ops this should not happen")
+         case Valid(employee) => employee
+         case Invalid(_) => throw new Exception("Ops this should not happen")
        }
     }
 }

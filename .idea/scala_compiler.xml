@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ScalaCompilerConfiguration">
-    <profile name="sbt 1" modules="andrea,expenses">
-      <option name="higherKinds" value="true" />
+    <profile name="sbt 1" modules="expenses_9297" />
+    <profile name="sbt 2" modules="expenses">
+      <parameters>
+        <parameter value="-Ypartial-unification" />
+      </parameters>
     </profile>
   </component>
 </project>

@@ -1,16 +1,17 @@
 package Expenses.Model
 
 import Expenses.TestUtils.CustomGen
+import cats.data.NonEmptyList
 import org.scalacheck.Prop.forAll
 import org.scalacheck.{Gen, Properties}
-import scalaz.{Failure, NonEmptyList, Success}
+import cats.data.Validated.{Invalid, Valid}
 
 object FoodExpenseSpec extends Properties("FoodExpense") {
   property("cost should be less than 50") =
     forAll(CustomGen.money(Gen.chooseNum[Double](50, Double.MaxValue), "EUR"),
       CustomGen.calendarInThePast) {
       (cost, date) => FoodExpense.create(cost, date.getTime) match {
-        case Failure(NonEmptyList(head, _)) if "cost is greater than or equal to 50".equals(head) => true
+        case Invalid(NonEmptyList(head, _)) if "cost is greater than or equal to 50".equals(head) => true
         case _ => false
       }
     }
@@ -19,7 +20,7 @@ object FoodExpenseSpec extends Properties("FoodExpense") {
     forAll(CustomGen.money(Gen.chooseNum[Double](Double.MinPositiveValue, 49.99), "EUR"),
       CustomGen.calendarInThePast) {
       (cost, date) => FoodExpense.create(cost, date.getTime) match {
-        case Success(FoodExpense(c, d)) => c == cost && d == date.getTime
+        case Valid(FoodExpense(c, d)) => c == cost && d == date.getTime
         case _ => false
       }
     }

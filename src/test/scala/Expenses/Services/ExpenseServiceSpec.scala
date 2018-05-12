@@ -4,7 +4,6 @@ import Expenses.Model.OpenExpenseSheet
 import Expenses.TestUtils.CustomGen
 import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import scalaz.Applicative
 
 //TODO da finire
 //object ExpenseServiceSpec {
