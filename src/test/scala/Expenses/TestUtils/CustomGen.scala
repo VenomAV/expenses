@@ -2,9 +2,11 @@ package Expenses.TestUtils
 
 import java.util.{Calendar, Date}
 
-import Expenses.Model.Employee
+import Expenses.Model.{Employee, Expense, FoodExpense, OpenExpenseSheet}
+import Expenses.Utils.Validation
 import org.scalacheck.Gen
 import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNel
 import squants.market.Money
 
 object CustomGen {
@@ -55,14 +57,32 @@ object CustomGen {
       list.mkString(" ")
     }
 
+  private def extractValid[T](result: Validation.Result[T]): T = result match {
+    case Valid(x) => x
+    case Invalid(_) => throw new Exception("Ops this should not happen")
+  }
+
   val employee : Gen[Employee] =
     for {
       name <- notNullOrEmptyString
       surname <- notNullOrEmptyString
     } yield {
-       Employee.create(name, surname) match {
-         case Valid(employee) => employee
-         case Invalid(_) => throw new Exception("Ops this should not happen")
-       }
+      extractValid(Employee.create(name, surname))
+    }
+
+  val expense : Gen[Expense] =
+    for {
+      calendar <- CustomGen.calendarInThePast
+      cost <- CustomGen.money(Gen.chooseNum[Double](Double.MinPositiveValue, 49.99), "EUR")
+    } yield {
+      extractValid(FoodExpense.create(cost, calendar.getTime))
+    }
+
+  val openExpenseSheet : Gen[OpenExpenseSheet] =
+    for {
+      employee <- CustomGen.employee
+      expenses <- Gen.listOf(CustomGen.expense)
+    } yield {
+      extractValid(OpenExpenseSheet.create(employee, expenses))
     }
 }
