@@ -6,7 +6,7 @@ import Expenses.Model.Employee.EmployeeId
 import Expenses.Utils.Validation
 import cats.implicits._
 
-sealed case class Employee private(id : EmployeeId, name: String, surname: String)
+sealed case class Employee (id : EmployeeId, name: String, surname: String)
 
 object Employee {
   type EmployeeId = UUID

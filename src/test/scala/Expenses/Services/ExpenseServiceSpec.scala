@@ -2,9 +2,7 @@ package Expenses.Services
 
 import Expenses.Model.OpenExpenseSheet
 import Expenses.TestUtils.CustomGen
-import cats.Applicative
 import cats.data.Validated.Valid
-import cats.implicits._
 import org.scalacheck.Prop.forAll
 import org.scalacheck.Properties
 

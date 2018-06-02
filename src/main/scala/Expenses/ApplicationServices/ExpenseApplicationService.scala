@@ -7,6 +7,7 @@ import Expenses.Repositories.{ClaimRepository, EmployeeRepository, ExpenseSheetR
 import Expenses.Services.ExpenseService
 import Expenses.Utils.Validation
 import cats._
+import cats.data.NonEmptyList
 import cats.implicits._
 
 object ExpenseApplicationService {
@@ -14,12 +15,16 @@ object ExpenseApplicationService {
                    (implicit M:Monad[F],
                     er: EmployeeRepository[F],
                     esr: ExpenseSheetRepository[F]) : F[Validation.Result[Unit]] =
-    for {
-      employee <- er.get(id)
-    } yield employee match {
-      case None => "Unable to find employee".invalidNel
-      case Some(e) => ExpenseService.openFor(e).map(esr.save(_))
-    }
+    er.get(id)
+      .map(x => for {
+        employee <- x.toRight(NonEmptyList.of("Unable to find employee"))
+        expenseSheet <- ExpenseService.openFor(employee).toEither
+      } yield {
+        expenseSheet
+      }).flatMap({
+        case Left(x) => M.pure(x.invalid)
+        case Right(x) => esr.save(x).map(_.valid)
+      })
 
   def addExpenseTo[F[_]](expense: Expense, id: ExpenseSheetId)
                         (implicit esr: ExpenseSheetRepository[F]) : F[Validation.Result[Unit]] = ???

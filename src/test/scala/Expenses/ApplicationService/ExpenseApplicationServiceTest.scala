@@ -3,34 +3,45 @@ package Expenses.ApplicationService
 import java.util.UUID
 
 import Expenses.ApplicationServices.ExpenseApplicationService
-import Expenses.Model.Employee.EmployeeId
 import Expenses.Model.{Employee, OpenExpenseSheet}
-import Expenses.TestUtils.{InMemoryEmployeeRepository, InMemoryExpenseSheetRepository, InMemoryMissingEmployeeRepository}
+import Expenses.TestUtils.AcceptanceTestUtils.{Test, TestState}
+import Expenses.TestUtils.{InMemoryEmployeeRepository, InMemoryExpenseSheetRepository}
+import Expenses.Utils.Validation.Result
 import cats.data.NonEmptyList
 import cats.data.Validated.Invalid
-import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
 
-class ExpenseApplicationServiceTest extends FunSpec with Matchers {
+class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAndAfter {
+  implicit var er: InMemoryEmployeeRepository = _
+  implicit var esr: InMemoryExpenseSheetRepository = _
+
+  before {
+    er = new InMemoryEmployeeRepository()
+    esr = new InMemoryExpenseSheetRepository()
+  }
   describe("openFor") {
     it("should save a new OpenExpenseSheet for the given employee") {
-      implicit val er = new InMemoryEmployeeRepository()
-      implicit val esr = new InMemoryExpenseSheetRepository()
-      val employeeId : EmployeeId = UUID.randomUUID()
+      val employee = Employee(UUID.randomUUID(), "A", "V")
+      val state = TestState(
+        List(employee),
+        List(),
+        List())
 
-      ExpenseApplicationService.openFor(employeeId)
-      esr.savedExpenseSheet should matchPattern {
-        case Some(OpenExpenseSheet(_, Employee(`employeeId`, _, _), List())) =>
-      }
+      ExpenseApplicationService.openFor[Test](employee.id)
+        .runS(state).value.expenseSheets.head should matchPattern {
+          case OpenExpenseSheet(_, `employee`, List()) =>
+        }
     }
     it("should not create an expense sheet when employee does not exist") {
-      implicit val er = new InMemoryMissingEmployeeRepository()
-      implicit val esr = new InMemoryExpenseSheetRepository()
-      val employeeId : EmployeeId = UUID.randomUUID()
+      val state = TestState(List(), List(), List())
 
-      ExpenseApplicationService.openFor(employeeId) should matchPattern {
+      val result: (TestState, Result[Unit]) = ExpenseApplicationService.openFor[Test](UUID.randomUUID())
+        .run(state).value
+
+      result._1 should equal(state)
+      result._2 should matchPattern {
         case Invalid(NonEmptyList("Unable to find employee", _)) =>
       }
-      esr.savedExpenseSheet should matchPattern { case None => }
     }
   }
 }

@@ -3,13 +3,15 @@ package Expenses.TestUtils
 import Expenses.Model.ExpenseSheet
 import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Repositories.ExpenseSheetRepository
-import cats.Id
+import Expenses.TestUtils.AcceptanceTestUtils.Test
+import cats.data.State
 
-class InMemoryExpenseSheetRepository extends ExpenseSheetRepository[Id]{
+class InMemoryExpenseSheetRepository extends ExpenseSheetRepository[Test]{
 
-  var savedExpenseSheet : Option[ExpenseSheet] = None
+  override def get(id: ExpenseSheetId): Test[ExpenseSheet] = ???
 
-  override def get(id: ExpenseSheetId): Id[ExpenseSheet] = ???
-
-  override def save(expenseSheet: ExpenseSheet): Id[Unit] = savedExpenseSheet = Some(expenseSheet)
+  override def save(expenseSheet: ExpenseSheet): Test[Unit] =
+    State {
+      state => (state.copy(expenseSheets = expenseSheet :: state.expenseSheets), ())
+    }
 }

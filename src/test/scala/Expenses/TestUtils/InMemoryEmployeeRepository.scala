@@ -3,15 +3,10 @@ package Expenses.TestUtils
 import Expenses.Model.Employee
 import Expenses.Model.Employee.EmployeeId
 import Expenses.Repositories.EmployeeRepository
-import cats.Id
+import Expenses.TestUtils.AcceptanceTestUtils.Test
+import cats.data.State
 
-class InMemoryEmployeeRepository extends EmployeeRepository[Id] {
-  override def get(id: EmployeeId): Id[Option[Employee]] =
-    Employee.create(id, "Andrea", "Vallotti")
-      .map(Some(_))
-      .getOrElse(None)
-}
-
-class InMemoryMissingEmployeeRepository extends EmployeeRepository[Id] {
-  override def get(id: EmployeeId): Id[Option[Employee]] = None
+class InMemoryEmployeeRepository extends EmployeeRepository[Test] {
+  override def get(id: EmployeeId): Test[Option[Employee]] =
+    State.get.map(_.employees.find(_.id == id))
 }
