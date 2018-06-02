@@ -9,6 +9,7 @@ object ErrorManagement {
   type Error = String
   type ErrorList = NonEmptyList[Error]
   type ValidationResult[A] = ValidatedNel[Error, A]
+  type ApplicationResult[A] = Either[ErrorList, A]
 
   def notEmptyString(errorMessage: String)(value: String): ValidationResult[String] =
     if (value == null || "".equals(value))

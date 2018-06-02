@@ -28,8 +28,8 @@ object ExpenseSheet {
   private val validateEmployee = ErrorManagement.notNull[Employee]("employee is null")(_)
 
   def createOpen(id: ExpenseSheetId, employee: Employee, expenses:List[Expense]) : ValidationResult[OpenExpenseSheet] =
-    (validateId(id),
-      validateEmployee(employee)).mapN(OpenExpenseSheet(_, _, expenses))
+    (validateId(id), validateEmployee(employee))
+      .mapN(OpenExpenseSheet(_, _, expenses))
 
   def createOpen(employee: Employee, expenses:List[Expense]) : ValidationResult[OpenExpenseSheet] =
     createOpen(UUID.randomUUID(), employee, expenses)
@@ -37,9 +37,8 @@ object ExpenseSheet {
   private val validateExpenses = ErrorManagement.nonEmptyList[Expense]("expenses is empty")(_)
 
   def createClaimed(id: ExpenseSheetId, employee: Employee, expenses:List[Expense]) : ValidationResult[ClaimedExpenseSheet] =
-    (validateId(id),
-      validateEmployee(employee),
-      validateExpenses(expenses)).mapN(ClaimedExpenseSheet(_, _, _))
+    (validateId(id), validateEmployee(employee), validateExpenses(expenses))
+      .mapN(ClaimedExpenseSheet)
 
   def createClaimed(employee: Employee, expenses:List[Expense]) : ValidationResult[ClaimedExpenseSheet] =
     createClaimed(UUID.randomUUID(), employee, expenses)

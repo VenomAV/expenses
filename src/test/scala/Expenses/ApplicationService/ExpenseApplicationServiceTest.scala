@@ -7,9 +7,8 @@ import Expenses.Model.Employee.EmployeeId
 import Expenses.Model.{Employee, OpenExpenseSheet}
 import Expenses.TestUtils.AcceptanceTestUtils.{Test, TestState}
 import Expenses.TestUtils.{InMemoryEmployeeRepository, InMemoryExpenseSheetRepository}
-import Expenses.Utils.ErrorManagement.ValidationResult
+import Expenses.Utils.ErrorManagement.ApplicationResult
 import cats.data.NonEmptyList
-import cats.data.Validated.Invalid
 import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
 
 class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAndAfter {
@@ -36,11 +35,11 @@ class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAnd
 
       newState should equal(state)
       result should matchPattern {
-        case Invalid(NonEmptyList("Unable to find employee", _)) =>
+        case Left(NonEmptyList("Unable to find employee", _)) =>
       }
     }
   }
 
-  private def runOpenFor(employeeId: EmployeeId, state: TestState) : (TestState, ValidationResult[Unit]) =
+  private def runOpenFor(employeeId: EmployeeId, state: TestState) : (TestState, ApplicationResult[Unit]) =
     ExpenseApplicationService.openFor[Test](employeeId).run(state).value
 }
