@@ -14,10 +14,12 @@ object ExpenseApplicationService {
                    (implicit M:Monad[F],
                     er: EmployeeRepository[F],
                     esr: ExpenseSheetRepository[F]) : F[Validation.Result[Unit]] =
-    er.get(id).map({
+    for {
+      employee <- er.get(id)
+    } yield employee match {
       case None => "Unable to find employee".invalidNel
-      case Some(employee) => ExpenseService.openFor(employee).map(esr.save(_))
-    })
+      case Some(e) => ExpenseService.openFor(e).map(esr.save(_))
+    }
 
   def addExpenseTo[F[_]](expense: Expense, id: ExpenseSheetId)
                         (implicit esr: ExpenseSheetRepository[F]) : F[Validation.Result[Unit]] = ???

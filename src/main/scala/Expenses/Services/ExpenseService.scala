@@ -2,8 +2,6 @@ package Expenses.Services
 
 import Expenses.Model._
 import Expenses.Utils.Validation
-import Expenses.Utils.Validation.Result
-import cats.Id
 import cats.data.NonEmptyList
 import cats.implicits._
 
