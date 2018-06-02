@@ -3,6 +3,7 @@
   <component name="ScalaCompilerConfiguration">
     <profile name="sbt 1" modules="expenses_9297" />
     <profile name="sbt 2" modules="expenses">
+      <option name="higherKinds" value="true" />
       <parameters>
         <parameter value="-Ypartial-unification" />
       </parameters>
