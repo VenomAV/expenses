@@ -8,10 +8,10 @@ import cats.effect._
 import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
 import doobie._
 import doobie.implicits._
-import doobie.postgres.Instances
+import doobie.postgres.implicits._
 import doobie.util.transactor.Transactor.Aux
 
-class DoobieTest extends FunSpec with Matchers with Instances with BeforeAndAfter{
+class DoobieTest extends FunSpec with Matchers with BeforeAndAfter{
   var testId: EmployeeId = _
   var xa: Aux[IO, Unit] = _
 
@@ -50,7 +50,5 @@ class DoobieTest extends FunSpec with Matchers with Instances with BeforeAndAfte
       .map(_ => ())
 
   def selectEmployee(id: EmployeeId): ConnectionIO[Option[Employee]] =
-    for {
-      employee <- sql"select * from employees where id=$id".query[Employee].option
-    } yield employee
+    sql"select * from employees where id=$id".query[Employee].option
 }
