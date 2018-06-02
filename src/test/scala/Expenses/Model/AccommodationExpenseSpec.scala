@@ -11,7 +11,7 @@ object AccommodationExpenseSpec extends Properties("AccommodationExpense") {
     forAll(CustomGen.strictlyPositiveMoney("EUR"),
       CustomGen.calendarInThePast,
       CustomGen.nullOrEmptyString) {
-      (cost, date, hotel) => AccommodationExpense.create(cost, date.getTime, hotel) match {
+      (cost, date, hotel) => Expense.createAccommodation(cost, date.getTime, hotel) match {
         case Invalid(NonEmptyList(head, _)) if "hotel is null or empty".equals(head) => true
         case _ => false
       }
@@ -21,7 +21,7 @@ object AccommodationExpenseSpec extends Properties("AccommodationExpense") {
     forAll(CustomGen.strictlyPositiveMoney("EUR"),
       CustomGen.calendarInThePast,
       CustomGen.notNullOrEmptyString) {
-      (cost, date, hotel) => AccommodationExpense.create(cost, date.getTime, hotel) match {
+      (cost, date, hotel) => Expense.createAccommodation(cost, date.getTime, hotel) match {
         case Valid(AccommodationExpense(c, d, h)) => c == cost && d == date.getTime && h == hotel
         case _ => false
       }

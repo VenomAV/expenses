@@ -3,7 +3,7 @@ package Expenses.Model
 import java.util.UUID
 
 import Expenses.Model.Claim.ClaimId
-import Expenses.Utils.Validation
+import Expenses.Utils.ErrorManagement.ValidationResult
 import cats.data.NonEmptyList
 import cats.implicits._
 
@@ -20,6 +20,6 @@ object Claim {
 }
 
 object PendingClaim {
-  def create(employee: Employee, expenses: NonEmptyList[Expense]) : Validation.Result[PendingClaim] =
+  def create(employee: Employee, expenses: NonEmptyList[Expense]) : ValidationResult[PendingClaim] =
     new PendingClaim(UUID.randomUUID(), employee, expenses).validNel
 }

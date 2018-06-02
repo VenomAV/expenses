@@ -11,7 +11,7 @@ object OtherExpenseSpec extends Properties("OtherExpense") {
     forAll(CustomGen.strictlyPositiveMoney("EUR"),
       CustomGen.calendarInThePast,
       CustomGen.sentence(maxWordCount = 9)) {
-      (cost, date, description) => OtherExpense.create(cost, date.getTime, description) match {
+      (cost, date, description) => Expense.createOther(cost, date.getTime, description) match {
         case Invalid(NonEmptyList(head, _)) if "description contains less than 10 words".equals(head) => true
         case _ => false
       }
@@ -21,7 +21,7 @@ object OtherExpenseSpec extends Properties("OtherExpense") {
     forAll(CustomGen.strictlyPositiveMoney("EUR"),
       CustomGen.calendarInThePast,
       CustomGen.sentence(10, 100)) {
-      (cost, date, description) => OtherExpense.create(cost, date.getTime, description) match {
+      (cost, date, description) => Expense.createOther(cost, date.getTime, description) match {
         case Valid(OtherExpense(c, d, x)) => c == cost && d == date.getTime && x == description
         case _ => false
       }

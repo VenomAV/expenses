@@ -12,7 +12,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.calendarInTheFuture,
       Gen.alphaNumStr,
       Gen.alphaNumStr) {
-      (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
+      (cost, date, from, to) => Expense.createTravel(cost, date.getTime, from, to) match {
         case Invalid(NonEmptyList(head, _)) if "date cannot be in the future".equals(head) => true
         case _ => false
       }
@@ -23,7 +23,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.calendarInThePast,
       CustomGen.notNullOrEmptyString,
       CustomGen.nullOrEmptyString) {
-      (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
+      (cost, date, from, to) => Expense.createTravel(cost, date.getTime, from, to) match {
         case Invalid(NonEmptyList(head, _)) if "to is null or empty".equals(head) => true
         case _ => false
       }
@@ -34,7 +34,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.calendarInThePast,
       CustomGen.nullOrEmptyString,
       CustomGen.notNullOrEmptyString) {
-      (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
+      (cost, date, from, to) => Expense.createTravel(cost, date.getTime, from, to) match {
         case Invalid(NonEmptyList(head, _)) if "from is null or empty".equals(head) => true
         case _ => false
       }
@@ -45,7 +45,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.calendarInThePast,
       CustomGen.notNullOrEmptyString,
       CustomGen.notNullOrEmptyString) {
-      (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
+      (cost, date, from, to) => Expense.createTravel(cost, date.getTime, from, to) match {
         case Invalid(NonEmptyList(head, _)) if "cost is less or equal to zero".equals(head) => true
         case _ => false
       }
@@ -56,7 +56,7 @@ object TravelExpenseSpec extends Properties("TravelExpense") {
       CustomGen.calendarInThePast,
       CustomGen.notNullOrEmptyString,
       CustomGen.notNullOrEmptyString) {
-      (cost, date, from, to) => TravelExpense.create(cost, date.getTime, from, to) match {
+      (cost, date, from, to) => Expense.createTravel(cost, date.getTime, from, to) match {
         case Valid(TravelExpense(c, d, f, t)) =>
           c == cost && d == date.getTime && f == from && t == to
         case _ => false

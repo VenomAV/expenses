@@ -10,7 +10,7 @@ object FoodExpenseSpec extends Properties("FoodExpense") {
   property("cost should be less than 50") =
     forAll(CustomGen.money(Gen.chooseNum[Double](50, Double.MaxValue), "EUR"),
       CustomGen.calendarInThePast) {
-      (cost, date) => FoodExpense.create(cost, date.getTime) match {
+      (cost, date) => Expense.createFood(cost, date.getTime) match {
         case Invalid(NonEmptyList(head, _)) if "cost is greater than or equal to 50".equals(head) => true
         case _ => false
       }
@@ -19,7 +19,7 @@ object FoodExpenseSpec extends Properties("FoodExpense") {
   property("when success should contain the given values") =
     forAll(CustomGen.money(Gen.chooseNum[Double](Double.MinPositiveValue, 49.99), "EUR"),
       CustomGen.calendarInThePast) {
-      (cost, date) => FoodExpense.create(cost, date.getTime) match {
+      (cost, date) => Expense.createFood(cost, date.getTime) match {
         case Valid(FoodExpense(c, d)) => c == cost && d == date.getTime
         case _ => false
       }
