@@ -10,7 +10,7 @@ class InMemoryEmployeeRepository extends EmployeeRepository[Test] {
   override def get(id: EmployeeId): Test[Option[Employee]] =
     State.get.map(_.employees.find(_.id == id))
 
-  override def insert(employee: Employee): Test[Unit] =
+  override def save(employee: Employee): Test[Unit] =
     State {
       state => (state.copy(employees = employee :: state.employees), ())
     }

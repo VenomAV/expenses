@@ -8,12 +8,12 @@ CREATE TABLE IF NOT EXISTS claims (
     id uuid NOT NULL,
     type char NOT NULL,
     employeeId uuid NOT NULL,
-    expenses varchar NOT NULL    
+    expenses JSON NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS expensesheet (
+CREATE TABLE IF NOT EXISTS expensesheets (
     id uuid NOT NULL,
     type char NOT NULL,
     employeeId uuid NOT NULL,
-    expenses varchar NOT NULL    
+    expenses JSON NOT NULL
 );

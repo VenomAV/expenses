@@ -8,7 +8,7 @@ import cats.data.State
 
 class InMemoryExpenseSheetRepository extends ExpenseSheetRepository[Test]{
 
-  override def get(id: ExpenseSheetId): Test[ExpenseSheet] = ???
+  override def get(id: ExpenseSheetId): Test[Option[ExpenseSheet]] = ???
 
   override def save(expenseSheet: ExpenseSheet): Test[Unit] =
     State {

@@ -5,5 +5,5 @@ import Expenses.Model.Employee.EmployeeId
 
 trait EmployeeRepository[F[_]] {
   def get(id: EmployeeId) : F[Option[Employee]]
-  def insert(employee: Employee): F[Unit]
+  def save(employee: Employee): F[Unit]
 }

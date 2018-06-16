@@ -24,12 +24,12 @@ abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F]) extends
       }
     }
   }
-  describe("insert") {
+  describe("save") {
     it("should work") {
       val sut = createRepositoryWith(List())
 
       run(for {
-        _ <- sut.insert(Employee(testId, s"Andrea $testId", s"Vallotti $testId"))
+        _ <- sut.save(Employee(testId, s"Andrea $testId", s"Vallotti $testId"))
         employee <- sut.get(testId)
       } yield employee) should matchPattern {
         case Some(Employee(_, _, _)) =>
