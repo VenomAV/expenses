@@ -1,9 +1,10 @@
-package Expenses.TestUtils
+package Infrastructure.InMemory
 
 import java.util.UUID
 
 import Expenses.Model.{Employee, OpenExpenseSheet}
 import Expenses.TestUtils.AcceptanceTestUtils.TestState
+import Expenses.TestUtils.InMemoryExpenseSheetRepository
 import org.scalatest.{FunSpec, Matchers}
 
 class InMemoryExpenseSheetRepositoryTest extends FunSpec with Matchers {
