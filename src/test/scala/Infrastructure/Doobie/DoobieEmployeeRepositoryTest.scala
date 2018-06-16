@@ -1,6 +1,7 @@
 package Infrastructure.Doobie
 
 import Expenses.Model.Employee
+import Expenses.Model.Employee.EmployeeId
 import Expenses.Repositories.EmployeeRepository
 import Infrastructure.EmployeeRepositoryContractTest
 import Infrastructure.Repositories.DoobieEmployeeRepository
@@ -13,6 +14,7 @@ import org.scalatest.BeforeAndAfter
 
 class DoobieEmployeeRepositoryTest extends EmployeeRepositoryContractTest[IO] with BeforeAndAfter {
   implicit var xa: Aux[IO, Unit] = _
+  var employeeIds : List[EmployeeId] = _
 
   before {
     xa = Transactor.fromDriverManager[IO](
@@ -22,11 +24,9 @@ class DoobieEmployeeRepositoryTest extends EmployeeRepositoryContractTest[IO] wi
       "p4ssw0r#"
     )
   }
-  after {
-    sql"delete from employees where id=$testId".update.run.transact(xa).unsafeRunSync
-  }
 
   override def createRepositoryWith(employees: List[Employee]): EmployeeRepository[IO] = {
+    employeeIds = employees.map(_.id)
     employees
       .map(e => sql"insert into employees (id, name, surname) values (${e.id}, ${e.name}, ${e.surname})".update.run)
       .map(_.transact(xa))
@@ -35,4 +35,9 @@ class DoobieEmployeeRepositoryTest extends EmployeeRepositoryContractTest[IO] wi
   }
 
   override def run[A](toBeExecuted: IO[A]): A = toBeExecuted.unsafeRunSync
+
+  override def deleteEmployee(employeeId: EmployeeId): Unit =
+    sql"delete from employees where id=$employeeId".update.run.transact(xa).unsafeRunSync
+
+  override def cleanUp(): Unit = employeeIds.map(deleteEmployee)
 }

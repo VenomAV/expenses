@@ -33,6 +33,17 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F]) ext
         case Some(OpenExpenseSheet(`id`, `employee`, `expenses`)) =>
       }
     }
+    it("should retrieve existing claimed expense sheet") {
+      val id = UUID.randomUUID()
+      val employee = Employee(UUID.randomUUID(), "Andrea", "Vallotti")
+      val expenses = List(
+        TravelExpense(Money(1, "EUR"), new Date(), "Florence", "Barcelona"))
+      val sut = createRepositoryWith(List(ClaimedExpenseSheet(id, employee, expenses)))
+
+      run(sut.get(id)) should matchPattern {
+        case Some(ClaimedExpenseSheet(`id`, `employee`, `expenses`)) =>
+      }
+    }
   }
 
   def createRepositoryWith(expenseSheets: List[ExpenseSheet]): ExpenseSheetRepository[F]

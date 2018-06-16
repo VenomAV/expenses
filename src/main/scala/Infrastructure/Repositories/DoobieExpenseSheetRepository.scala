@@ -25,20 +25,26 @@ class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSh
           where es.id=$id"""
       .query[DBTuple]
       .option
-      .map(_.map(tupleToExpenseSheet))
+      .map(_.map(unsafeDBTupleToExpenseSheet))
       .transact(xa)
 
   override def save(expenseSheet: ExpenseSheet): IO[Unit] =
     sql"""insert into expensesheets (id, type, employeeid, expenses)
-          values (${expenseSheet.id}, 'O', ${expenseSheet.employee.id}, ${expenseSheet.expenses})"""
+          values (${expenseSheet.id}, ${expenseSheetType(expenseSheet)}, ${expenseSheet.employee.id}, ${expenseSheet.expenses})"""
       .update.run.map(_ => ()).transact(xa)
 
-  def tupleToExpenseSheet(tuple: DBTuple) : ExpenseSheet = {
+  private def unsafeDBTupleToExpenseSheet(tuple: DBTuple) : ExpenseSheet = {
     val (id, expenseSheetType, expenses, employee) = tuple
 
     expenseSheetType match {
       case "O" => OpenExpenseSheet(id, employee, expenses)
+      case "C" => ClaimedExpenseSheet(id, employee, expenses)
       case _ => throw new UnsupportedOperationException
     }
+  }
+
+  private def expenseSheetType(expenseSheet: ExpenseSheet) : ExpenseSheetType = expenseSheet match {
+    case OpenExpenseSheet(_, _, _) => "O"
+    case ClaimedExpenseSheet(_, _, _) => "C"
   }
 }

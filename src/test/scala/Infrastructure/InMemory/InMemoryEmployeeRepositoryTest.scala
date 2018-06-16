@@ -1,6 +1,7 @@
 package Infrastructure.InMemory
 
 import Expenses.Model.Employee
+import Expenses.Model.Employee.EmployeeId
 import Expenses.Repositories.EmployeeRepository
 import Expenses.TestUtils.AcceptanceTestUtils.{Test, TestState}
 import Expenses.TestUtils.InMemoryEmployeeRepository
@@ -26,4 +27,8 @@ class InMemoryEmployeeRepositoryTest extends EmployeeRepositoryContractTest[Test
   }
 
   override def run[A](executionUnit: Test[A]): A = executionUnit.runA(state).value
+
+  override def deleteEmployee(employeeId: EmployeeId): Unit = ()
+
+  override def cleanUp(): Unit = ()
 }
