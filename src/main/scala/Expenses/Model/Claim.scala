@@ -8,12 +8,12 @@ import cats.data.NonEmptyList
 import cats.implicits._
 
 sealed trait Claim {
-  def Id: ClaimId
+  def id: ClaimId
   def employee: Employee
   def expenses: NonEmptyList[Expense]
 }
 
-case class PendingClaim (id: ClaimId, employee: Employee, expenses: NonEmptyList[Expense])
+case class PendingClaim (id: ClaimId, employee: Employee, expenses: NonEmptyList[Expense]) extends Claim
 
 object Claim {
   type ClaimId = UUID

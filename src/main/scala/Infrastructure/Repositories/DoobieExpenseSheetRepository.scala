@@ -3,17 +3,13 @@ package Infrastructure.Repositories
 import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model._
 import Expenses.Repositories.ExpenseSheetRepository
-import Infrastructure.JsonCodecs.implicits._
-import Infrastructure.Repositories.Doobie._
+import Infrastructure.Repositories.Doobie.implicits._
 import cats.effect.IO
 import doobie.implicits._
 import doobie.postgres.implicits._
-import doobie.util.meta.Meta
 import doobie.util.transactor.Transactor.Aux
 
 class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSheetRepository[IO] {
-
-  implicit val ExpenseListMeta: Meta[List[Expense]] = codecMeta[List[Expense]]
 
   type ExpenseSheetType = String
   type DBTuple = (ExpenseSheetId, ExpenseSheetType, List[Expense], Employee)
@@ -46,5 +42,6 @@ class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSh
   private def expenseSheetType(expenseSheet: ExpenseSheet) : ExpenseSheetType = expenseSheet match {
     case OpenExpenseSheet(_, _, _) => "O"
     case ClaimedExpenseSheet(_, _, _) => "C"
+    case _ => throw new UnsupportedOperationException
   }
 }
