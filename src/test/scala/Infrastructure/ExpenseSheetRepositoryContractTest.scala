@@ -22,7 +22,11 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F]) ext
     it("should retrieve existing open expense sheet w/ expenses") {
       val id = UUID.randomUUID()
       val employee = Employee(UUID.randomUUID(), "Andrea", "Vallotti")
-      val expenses = List(TravelExpense(Money(1, "EUR"), new Date(), "Florence", "Barcelona"))
+      val expenses = List(
+        TravelExpense(Money(1, "EUR"), new Date(), "Florence", "Barcelona"),
+        FoodExpense(Money(2, "EUR"), new Date()),
+        AccommodationExpense(Money(2, "EUR"), new Date(), "Artemide"),
+        OtherExpense(Money(2, "EUR"), new Date(), "A very long description about how I spend money"))
       val sut = createRepositoryWith(List(OpenExpenseSheet(id, employee, expenses)))
 
       run(sut.get(id)) should matchPattern {
