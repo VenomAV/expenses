@@ -28,7 +28,5 @@ class InMemoryEmployeeRepositoryTest extends EmployeeRepositoryContractTest[Test
 
   override def run[A](executionUnit: Test[A]): A = executionUnit.runA(state).value
 
-  override def deleteEmployee(employeeId: EmployeeId): Unit = ()
-
-  override def cleanUp(): Unit = ()
+  override def cleanUp(employeeIds: List[EmployeeId]): Unit = ()
 }

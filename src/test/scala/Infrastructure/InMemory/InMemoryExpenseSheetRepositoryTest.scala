@@ -1,24 +1,26 @@
 package Infrastructure.InMemory
 
-import java.util.UUID
-
-import Expenses.Model.{Employee, OpenExpenseSheet}
-import Expenses.TestUtils.AcceptanceTestUtils.TestState
+import Expenses.Model.Employee.EmployeeId
+import Expenses.Model.ExpenseSheet.ExpenseSheetId
+import Expenses.Model.{Employee, ExpenseSheet}
+import Expenses.Repositories.ExpenseSheetRepository
+import Expenses.TestUtils.AcceptanceTestUtils.{Test, TestState}
 import Expenses.TestUtils.InMemoryExpenseSheetRepository
-import org.scalatest.{FunSpec, Matchers}
+import Infrastructure.ExpenseSheetRepositoryContractTest
 
-class InMemoryExpenseSheetRepositoryTest extends FunSpec with Matchers {
-  describe("save") {
-    it("should modify state") {
-      implicit val state = TestState(
-        List(),
-        List(),
-        List())
-      implicit val esr = new InMemoryExpenseSheetRepository()
-      val employee = Employee(UUID.randomUUID(), "A", "V")
-      val expenseSheet = OpenExpenseSheet(UUID.randomUUID(), employee, List())
+class InMemoryExpenseSheetRepositoryTest extends ExpenseSheetRepositoryContractTest[Test] {
+  implicit var state : TestState = _
 
-      esr.save(expenseSheet).runS(state).value.expenseSheets should contain (expenseSheet)
-    }
+  override def createRepositoryWith(expenseSheets: List[ExpenseSheet], employees: List[Employee]):
+      ExpenseSheetRepository[Test] = {
+    state = TestState(
+      employees,
+      expenseSheets,
+      List())
+    new InMemoryExpenseSheetRepository
   }
+
+  override def run[A](toBeExecuted: Test[A]): A = toBeExecuted.runA(state).value
+
+  override def cleanUp(expenseSheetIds: List[ExpenseSheetId], employeeIds: List[EmployeeId]): Unit = ()
 }

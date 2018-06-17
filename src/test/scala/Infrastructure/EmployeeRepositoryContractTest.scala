@@ -6,12 +6,16 @@ import Expenses.Model.Employee
 import Expenses.Model.Employee.EmployeeId
 import Expenses.Repositories.EmployeeRepository
 import cats.Monad
-import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
-import cats.syntax.functor._
 import cats.syntax.flatMap._
+import cats.syntax.functor._
+import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
 
-abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F]) extends FunSpec with Matchers with BeforeAndAfter {
-  val testId: EmployeeId = UUID.randomUUID()
+import scala.collection.mutable.ListBuffer
+
+abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F])
+  extends FunSpec with Matchers with BeforeAndAfterEach {
+
+  val toBeDeletedEmployeeIds: ListBuffer[EmployeeId] = ListBuffer.empty[EmployeeId]
 
   describe("get") {
     it("should retrieve existing element") {
@@ -27,26 +31,26 @@ abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F]) extends
   }
   describe("save") {
     it("should work") {
+      val id = UUID.randomUUID()
       val sut = createRepositoryWith(List())
 
+      toBeDeletedEmployeeIds += id
       run(for {
-        _ <- sut.save(Employee(testId, s"Andrea $testId", s"Vallotti $testId"))
-        employee <- sut.get(testId)
+        _ <- sut.save(Employee(id, s"Andrea $id", s"Vallotti $id"))
+        employee <- sut.get(id)
       } yield employee) should matchPattern {
         case Some(Employee(_, _, _)) =>
       }
     }
   }
-  after {
-    deleteEmployee(testId)
-    cleanUp()
+
+  override protected def afterEach(): Unit = {
+    cleanUp(toBeDeletedEmployeeIds.toList)
   }
 
   def createRepositoryWith(employees: List[Employee]): EmployeeRepository[F]
 
   def run[A](toBeExecuted: F[A]) : A
 
-  def deleteEmployee(employeeId: EmployeeId) : Unit
-
-  def cleanUp() : Unit
+  def cleanUp(employeeIds: List[EmployeeId]): Unit
 }

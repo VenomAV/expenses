@@ -10,19 +10,24 @@ import doobie.Transactor
 import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.util.transactor.Transactor.Aux
-import org.scalatest.BeforeAndAfter
 
-class DoobieEmployeeRepositoryTest extends EmployeeRepositoryContractTest[IO] with BeforeAndAfter {
+class DoobieEmployeeRepositoryTest extends EmployeeRepositoryContractTest[IO] {
   implicit var xa: Aux[IO, Unit] = _
   var employeeIds : List[EmployeeId] = _
 
-  before {
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
     xa = Transactor.fromDriverManager[IO](
       "org.postgresql.Driver",
       "jdbc:postgresql:postgres",
       "postgres",
       "p4ssw0r#"
     )
+  }
+
+  override protected def afterEach(): Unit = {
+    super.afterEach()
+    cleanUp(employeeIds)
   }
 
   override def createRepositoryWith(employees: List[Employee]): EmployeeRepository[IO] = {
@@ -36,8 +41,6 @@ class DoobieEmployeeRepositoryTest extends EmployeeRepositoryContractTest[IO] wi
 
   override def run[A](toBeExecuted: IO[A]): A = toBeExecuted.unsafeRunSync
 
-  override def deleteEmployee(employeeId: EmployeeId): Unit =
-    sql"delete from employees where id=$employeeId".update.run.transact(xa).unsafeRunSync
-
-  override def cleanUp(): Unit = employeeIds.map(deleteEmployee)
+  override def cleanUp(employeeIds: List[EmployeeId]): Unit =
+    employeeIds.map(x => sql"delete from employees where id=$x".update.run.transact(xa).unsafeRunSync)
 }
