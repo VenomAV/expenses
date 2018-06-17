@@ -22,5 +22,5 @@ class InMemoryExpenseSheetRepositoryTest extends ExpenseSheetRepositoryContractT
 
   override def run[A](toBeExecuted: Test[A]): A = toBeExecuted.runA(state).value
 
-  override def cleanUp(expenseSheetIds: List[ExpenseSheetId], employeeIds: List[EmployeeId]): Unit = ()
+  override def cleanUp(expenseSheetIds: List[ExpenseSheetId]): Unit = ()
 }

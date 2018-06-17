@@ -16,7 +16,6 @@ import scala.collection.mutable.ListBuffer
 
 abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F])
   extends FunSpec with Matchers with BeforeAndAfterEach {
-  val toBeDeletedEmployeeIds: ListBuffer[EmployeeId] = ListBuffer.empty[EmployeeId]
   val toBeDeletedExpenseSheetIds: ListBuffer[ExpenseSheetId] = ListBuffer.empty[ExpenseSheetId]
 
   describe ("get") {
@@ -73,12 +72,12 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F])
   }
 
   override def afterEach(): Unit = {
-    cleanUp(toBeDeletedExpenseSheetIds.toList, toBeDeletedEmployeeIds.toList)
+    cleanUp(toBeDeletedExpenseSheetIds.toList)
   }
 
   def createRepositoryWith(expenseSheets: List[ExpenseSheet], employees: List[Employee] = List()): ExpenseSheetRepository[F]
 
   def run[A](toBeExecuted: F[A]) : A
 
-  def cleanUp(expenseSheetIds: List[ExpenseSheetId], employeeIds: List[EmployeeId]): Unit
+  def cleanUp(expenseSheetIds: List[ExpenseSheetId]): Unit
 }
