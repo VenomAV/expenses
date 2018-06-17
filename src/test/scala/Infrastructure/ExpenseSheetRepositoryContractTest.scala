@@ -2,7 +2,6 @@ package Infrastructure
 
 import java.util.{Date, UUID}
 
-import Expenses.Model.Employee.EmployeeId
 import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model._
 import Expenses.Repositories.ExpenseSheetRepository
@@ -64,10 +63,18 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F])
 
       run(for {
         _ <- sut.save(expenseSheet)
-        es <- sut.get(expenseSheet.id)
-      } yield es) should matchPattern {
-        case Some(OpenExpenseSheet(_, _, _)) =>
-      }
+        check <- existExpenseSheet(expenseSheet.id)
+      } yield check) should be(true)
+    }
+    it("should not save when employee does not exist") {
+      val employee = Employee(UUID.randomUUID(), "A", "V")
+      val sut = createRepositoryWith(List(), List())
+      val expenseSheet = OpenExpenseSheet(UUID.randomUUID(), employee, List())
+
+      run(for {
+        _ <- sut.save(expenseSheet)
+        check <- existExpenseSheet(expenseSheet.id)
+      } yield check) should be(false)
     }
   }
 
@@ -80,4 +87,6 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F])
   def run[A](toBeExecuted: F[A]) : A
 
   def cleanUp(expenseSheetIds: List[ExpenseSheetId]): Unit
+
+  def existExpenseSheet(id: ExpenseSheetId) : F[Boolean]
 }

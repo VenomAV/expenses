@@ -13,8 +13,8 @@ import doobie.postgres.implicits._
 
 trait BaseDoobieTest {
   implicit var xa: Aux[IO, Unit] = _
-  var employeeIds : List[EmployeeId] = _
-  var expenseSheetIds : List[ExpenseSheetId] = _
+  var employeeIds: List[EmployeeId] = _
+  var expenseSheetIds: List[ExpenseSheetId] = _
 
   def setUpDatabase(): Unit = {
     xa = Transactor.fromDriverManager[IO](
@@ -35,7 +35,7 @@ trait BaseDoobieTest {
   }
 
   def createRepositoriesWith(expenseSheets: List[ExpenseSheet], employees: List[Employee]):
-      (ExpenseSheetRepository[IO], EmployeeRepository[IO]) = {
+  (ExpenseSheetRepository[IO], EmployeeRepository[IO]) = {
     val employeeRepository = new DoobieEmployeeRepository
     val expenseSheetRepository = new DoobieExpenseSheetRepository()
 
@@ -51,5 +51,15 @@ trait BaseDoobieTest {
     (expenseSheetRepository, employeeRepository)
   }
 
-  def run[A](toBeExecuted: IO[A]): A =  toBeExecuted.unsafeRunSync
+  def run[A](toBeExecuted: IO[A]): A = toBeExecuted.unsafeRunSync
+
+  def existExpenseSheet(id: ExpenseSheetId): IO[Boolean] =
+    sql"select 1 from expensesheets where id=$id"
+      .query[Int]
+      .option
+      .map({
+        case None => false
+        case _ => true
+      })
+      .transact(xa)
 }

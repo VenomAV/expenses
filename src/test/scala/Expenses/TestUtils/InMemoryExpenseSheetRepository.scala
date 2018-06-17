@@ -13,6 +13,11 @@ class InMemoryExpenseSheetRepository extends ExpenseSheetRepository[Test]{
 
   override def save(expenseSheet: ExpenseSheet): Test[Unit] =
     State {
-      state => (state.copy(expenseSheets = expenseSheet :: state.expenseSheets), ())
+      state => {
+        if (state.employees.exists(_.id == expenseSheet.employee.id))
+          (state.copy(expenseSheets = expenseSheet :: state.expenseSheets), ())
+        else
+          (state, ())
+      }
     }
 }
