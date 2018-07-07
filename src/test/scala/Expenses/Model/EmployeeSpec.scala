@@ -2,9 +2,8 @@ package Expenses.Model
 
 import cats.data.NonEmptyList
 import cats.data.Validated.{Invalid, Valid}
-import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
-import org.scalacheck.Gen
+import org.scalacheck.{Gen, Properties}
 
 object EmployeeSpec extends Properties("Employee") {
   property("surname should not be empty") =
