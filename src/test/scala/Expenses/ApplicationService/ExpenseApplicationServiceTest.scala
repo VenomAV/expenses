@@ -1,23 +1,27 @@
 package Expenses.ApplicationService
 
-import java.util.UUID
+import java.util.{Date, UUID}
 
 import Expenses.ApplicationServices.ExpenseApplicationService
 import Expenses.Model.Employee.EmployeeId
-import Expenses.Model.{Employee, OpenExpenseSheet}
+import Expenses.Model.ExpenseSheet.ExpenseSheetId
+import Expenses.Model._
 import Expenses.TestUtils.AcceptanceTestUtils.{Test, TestState}
-import Expenses.TestUtils.{InMemoryEmployeeRepository, InMemoryExpenseSheetRepository}
+import Expenses.TestUtils.{InMemoryClaimRepository, InMemoryEmployeeRepository, InMemoryExpenseSheetRepository}
 import Expenses.Utils.ErrorManagement.ApplicationResult
 import cats.data.NonEmptyList
 import org.scalatest.{BeforeAndAfter, FunSpec, Matchers}
+import squants.market.Money
 
 class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAndAfter {
   implicit var er: InMemoryEmployeeRepository = _
   implicit var esr: InMemoryExpenseSheetRepository = _
+  implicit var cr: InMemoryClaimRepository = _
 
   before {
     er = new InMemoryEmployeeRepository()
     esr = new InMemoryExpenseSheetRepository()
+    cr = new InMemoryClaimRepository()
   }
   describe("openFor") {
     it("should save a new OpenExpenseSheet for the given employee") {
@@ -39,7 +43,30 @@ class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAnd
       }
     }
   }
+  describe("claim") {
+    it("should save claimed expense sheet and pending claim") {
+      val employee = Employee(UUID.randomUUID(), "A", "V")
+      val expenses = List(TravelExpense(Money(1, "EUR"), new Date(), "Florence", "Barcelona"))
+      val openExpenseSheet = OpenExpenseSheet(UUID.randomUUID(), employee, expenses)
+      val state = TestState(List(employee), List(openExpenseSheet), List())
+      val id = openExpenseSheet.id
+      val (newState, result) = runClaimFor(id, state)
+
+      result should matchPattern {
+        case Right(()) =>
+      }
+      newState.claims should matchPattern {
+        case List(PendingClaim(_, `employee`, _)) =>
+      }
+      newState.expenseSheets should matchPattern {
+        case List(ClaimedExpenseSheet(`id`, `employee`, `expenses`)) =>
+      }
+    }
+  }
 
   private def runOpenFor(employeeId: EmployeeId, state: TestState) : (TestState, ApplicationResult[Unit]) =
     ExpenseApplicationService.openFor[Test](employeeId).run(state).value
+
+  private def runClaimFor(expenseSheetId: ExpenseSheetId, state: TestState) : (TestState, ApplicationResult[Unit]) =
+    ExpenseApplicationService.claim[Test](expenseSheetId).run(state).value
 }

@@ -33,7 +33,7 @@ object ErrorManagement {
 
   def nonEmptyList[T](errorMessage: String)(list: List[T]): ValidationResult[List[T]] =
     list match {
-      case List(_, _) => list.validNel
+      case _ :: _ => list.validNel
       case _ => errorMessage.invalidNel
     }
 
