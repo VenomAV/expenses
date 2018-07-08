@@ -3,23 +3,20 @@ package Infrastructure.Repositories
 import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model._
 import Expenses.Repositories.ExpenseSheetRepository
-import cats.effect.IO
+import Infrastructure.Repositories.Doobie.implicits._
 import cats.free.Free
+import doobie.free.connection.{ConnectionIO, ConnectionOp}
 import doobie.implicits._
 import doobie.postgres.implicits._
-import doobie.util.transactor.Transactor.Aux
-import Infrastructure.Repositories.Doobie.implicits._
-import doobie.free.connection.{ConnectionIO, ConnectionOp}
 
-class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSheetRepository[IO] {
+class DoobieExpenseSheetRepository extends ExpenseSheetRepository[ConnectionIO] {
 
   type ExpenseSheetType = String
   type DBTuple = (ExpenseSheetId, ExpenseSheetType, List[Expense], Employee)
 
-  override def get(id: ExpenseSheetId): IO[Option[ExpenseSheet]] =
+  override def get(id: ExpenseSheetId): ConnectionIO[Option[ExpenseSheet]] =
     select(id)
       .map(_.map(unsafeDBTupleToExpenseSheet))
-      .transact(xa)
 
   private def select(id: ExpenseSheetId): ConnectionIO[Option[DBTuple]] =
     sql"""select es.id, es.type, es.expenses, e.id, e.name, e.surname
@@ -39,7 +36,7 @@ class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSh
     }
   }
 
-  override def save(expenseSheet: ExpenseSheet): IO[Unit] =
+  override def save(expenseSheet: ExpenseSheet): ConnectionIO[Unit] =
     (for {
       countEmployees <- sql"select count(*) from employees where id=${expenseSheet.employee.id}".query[Long].unique
       countExpenseSheets <- sql"select count(*) from expensesheets where id=${expenseSheet.id}".query[Long].unique
@@ -47,7 +44,7 @@ class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSh
         if (countEmployees == 0) Free.pure[ConnectionOp, Int](0)
         else if (countExpenseSheets == 0) insert(expenseSheet)
         else update(expenseSheet)
-    } yield insertOrUpdate).map(_ => ()).transact(xa)
+    } yield insertOrUpdate).map(_ => ())
 
   private def update(expenseSheet: ExpenseSheet): ConnectionIO[Int] =
     sql"""update expensesheets set type=${expenseSheetType(expenseSheet)},

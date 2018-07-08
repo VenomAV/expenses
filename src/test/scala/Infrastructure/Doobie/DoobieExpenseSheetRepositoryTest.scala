@@ -4,10 +4,11 @@ import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model.{Employee, ExpenseSheet}
 import Expenses.Repositories.ExpenseSheetRepository
 import Infrastructure.ExpenseSheetRepositoryContractTest
-import cats.effect.IO
+import doobie.free.connection.ConnectionIO
 import doobie.postgres.implicits._
+import BaseDoobieTest._
 
-class DoobieExpenseSheetRepositoryTest extends ExpenseSheetRepositoryContractTest[IO] with BaseDoobieTest {
+class DoobieExpenseSheetRepositoryTest extends ExpenseSheetRepositoryContractTest[ConnectionIO] with BaseDoobieTest {
 
   override protected def beforeEach(): Unit =  {
     super.beforeEach()
@@ -20,7 +21,7 @@ class DoobieExpenseSheetRepositoryTest extends ExpenseSheetRepositoryContractTes
   }
 
   override def createRepositoryWith(expenseSheets: List[ExpenseSheet], employees: List[Employee]):
-      ExpenseSheetRepository[IO] = createRepositoriesWith(expenseSheets, employees)._1
+      ExpenseSheetRepository[ConnectionIO] = createRepositoriesWith(expenseSheets, employees)._1
 
   override def cleanUp(expenseSheetIds: List[ExpenseSheetId]): Unit = cleanUp(expenseSheetIds, List())
 }

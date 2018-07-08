@@ -5,11 +5,16 @@ import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model.{Employee, ExpenseSheet}
 import Expenses.Repositories.{EmployeeRepository, ExpenseSheetRepository}
 import Infrastructure.Repositories.{DoobieEmployeeRepository, DoobieExpenseSheetRepository}
-import cats.effect.IO
+import cats.effect.{Async, IO}
+import doobie.free.connection.ConnectionIO
 import doobie.util.transactor.Transactor
 import doobie.util.transactor.Transactor.Aux
 import doobie.implicits._
 import doobie.postgres.implicits._
+
+object BaseDoobieTest {
+  implicit val M = Async[ConnectionIO]
+}
 
 trait BaseDoobieTest {
   implicit var xa: Aux[IO, Unit] = _
@@ -35,7 +40,7 @@ trait BaseDoobieTest {
   }
 
   def createRepositoriesWith(expenseSheets: List[ExpenseSheet], employees: List[Employee]):
-  (ExpenseSheetRepository[IO], EmployeeRepository[IO]) = {
+  (ExpenseSheetRepository[ConnectionIO], EmployeeRepository[ConnectionIO]) = {
     val employeeRepository = new DoobieEmployeeRepository
     val expenseSheetRepository = new DoobieExpenseSheetRepository()
 
@@ -43,17 +48,15 @@ trait BaseDoobieTest {
     expenseSheetIds = expenseSheets.map(_.id)
 
     employees
-      .map(employeeRepository.save)
-      .foreach(_.unsafeRunSync)
+      .foreach(employeeRepository.save(_).transact(xa).unsafeRunSync())
     expenseSheets
-      .map(expenseSheetRepository.save)
-      .foreach(_.unsafeRunSync)
+      .foreach(expenseSheetRepository.save(_).transact(xa).unsafeRunSync())
     (expenseSheetRepository, employeeRepository)
   }
 
-  def run[A](toBeExecuted: IO[A]): A = toBeExecuted.unsafeRunSync
+  def run[A](toBeExecuted: ConnectionIO[A]): A = toBeExecuted.transact(xa).unsafeRunSync
 
-  def existExpenseSheet(id: ExpenseSheetId): IO[Boolean] =
+  def existExpenseSheet(id: ExpenseSheetId): ConnectionIO[Boolean] =
     sql"select 1 from expensesheets where id=$id"
       .query[Int]
       .option
@@ -61,5 +64,4 @@ trait BaseDoobieTest {
         case None => false
         case _ => true
       })
-      .transact(xa)
 }
