@@ -81,7 +81,7 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F])
       val expenseSheet = OpenExpenseSheet(UUID.randomUUID(), employee, List())
       val sut = createRepositoryWith(List(expenseSheet), List(employee))
       val expense = FoodExpense(Money(1, "EUR"), new Date())
-      val updatedExpenseSheet = expenseSheet.copy(expenses = List(expense))
+      val updatedExpenseSheet = ClaimedExpenseSheet(expenseSheet.id, employee, List(expense))
 
       run(for {
         _ <- sut.save(updatedExpenseSheet)
