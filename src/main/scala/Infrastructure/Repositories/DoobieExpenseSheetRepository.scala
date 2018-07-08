@@ -9,7 +9,7 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import doobie.util.transactor.Transactor.Aux
 import Infrastructure.Repositories.Doobie.implicits._
-import doobie.free.connection.ConnectionIO
+import doobie.free.connection.{ConnectionIO, ConnectionOp}
 
 class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSheetRepository[IO] {
 
@@ -41,14 +41,19 @@ class DoobieExpenseSheetRepository(implicit xa: Aux[IO, Unit]) extends ExpenseSh
 
   override def save(expenseSheet: ExpenseSheet): IO[Unit] =
     (for {
-      exists <- employeeExists(expenseSheet.employee)
-      _ <- exists
-        .map(_ => insert(expenseSheet))
-        .getOrElse(Free.pure(0))
-    } yield ()).transact(xa)
+      countEmployees <- sql"select count(*) from employees where id=${expenseSheet.employee.id}".query[Long].unique
+      countExpenseSheets <- sql"select count(*) from expensesheets where id=${expenseSheet.id}".query[Long].unique
+      insertOrUpdate <-
+        if (countEmployees == 0) Free.pure[ConnectionOp, Int](0)
+        else if (countExpenseSheets == 0) insert(expenseSheet)
+        else update(expenseSheet)
+    } yield insertOrUpdate).map(_ => ()).transact(xa)
 
-  private def employeeExists(employee: Employee): ConnectionIO[Option[Boolean]] =
-    sql"select 1 from employees where id=${employee.id}".query[Boolean].option
+  private def update(expenseSheet: ExpenseSheet): ConnectionIO[Int] =
+    sql"""update expensesheets set type=${expenseSheetType(expenseSheet)},
+          employeeid=${expenseSheet.employee.id}, expenses=${expenseSheet.expenses}
+          where id=${expenseSheet.id}"""
+      .update.run
 
   private def insert(expenseSheet: ExpenseSheet): ConnectionIO[Int] =
     sql"""insert into expensesheets (id, type, employeeid, expenses)

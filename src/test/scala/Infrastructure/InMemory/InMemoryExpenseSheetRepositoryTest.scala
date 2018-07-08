@@ -25,5 +25,5 @@ class InMemoryExpenseSheetRepositoryTest extends ExpenseSheetRepositoryContractT
   override def cleanUp(expenseSheetIds: List[ExpenseSheetId]): Unit = ()
 
   override def existExpenseSheet(id: ExpenseSheetId): Test[Boolean] =
-    State.get.map(_.expenseSheets.exists(_.id == id))
+    State.get.map(_.expenseSheets.count(_.id == id) == 1)
 }

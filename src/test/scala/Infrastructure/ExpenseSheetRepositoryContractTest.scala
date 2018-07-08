@@ -76,6 +76,20 @@ abstract class ExpenseSheetRepositoryContractTest[F[_]](implicit M:Monad[F])
         check <- existExpenseSheet(expenseSheet.id)
       } yield check) should be(false)
     }
+    it("should update an existing expense sheet") {
+      val employee = Employee(UUID.randomUUID(), "A", "V")
+      val expenseSheet = OpenExpenseSheet(UUID.randomUUID(), employee, List())
+      val sut = createRepositoryWith(List(expenseSheet), List(employee))
+      val expense = FoodExpense(Money(1, "EUR"), new Date())
+      val updatedExpenseSheet = expenseSheet.copy(expenses = List(expense))
+
+      run(for {
+        _ <- sut.save(updatedExpenseSheet)
+        gotExpenseSheet <- sut.get(expenseSheet.id)
+      } yield gotExpenseSheet) should matchPattern {
+        case Some(`updatedExpenseSheet`) =>
+      }
+    }
   }
 
   override def afterEach(): Unit = {
