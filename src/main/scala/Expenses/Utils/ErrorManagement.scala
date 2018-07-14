@@ -3,7 +3,7 @@ package Expenses.Utils
 import java.util.{Calendar, Date}
 
 import cats.Monad
-import cats.data.{NonEmptyList, ValidatedNel}
+import cats.data.{EitherT, NonEmptyList, ValidatedNel}
 import cats.implicits._
 
 object ErrorManagement {
@@ -54,6 +54,16 @@ object ErrorManagement {
     implicit class FOptionToFEither[F[_], T](val option: F[Option[T]]) extends AnyVal {
       def orError(error: Error)(implicit M:Monad[F]): F[Either[ErrorList, T]] =
         option.map(x => x.orError(error))
+      def orErrorT(error: Error)(implicit M:Monad[F]): EitherT[F, ErrorList, T] =
+        EitherT(option.orError(error))
+    }
+    implicit class ValidationResultToEitherT[T](val validationResult: ValidationResult[T]) extends AnyVal {
+      def toEitherT[F[_]]()(implicit M:Monad[F]): EitherT[F, ErrorList, T] =
+        validationResult.toEither.toEitherT[F]
+    }
+    implicit class FAnyToEitherT[F[_], T](val any: F[T]) extends AnyVal {
+      def rightT()(implicit M:Monad[F]): EitherT[F, ErrorList, T] =
+        EitherT.right[ErrorList](any)
     }
   }
 }
