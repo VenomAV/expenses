@@ -2,6 +2,7 @@ package Expenses.Utils
 
 import java.util.{Calendar, Date}
 
+import cats.Monad
 import cats.data.{NonEmptyList, ValidatedNel}
 import cats.implicits._
 
@@ -49,6 +50,10 @@ object ErrorManagement {
         case None => Left(ErrorList.of(error))
         case Some(x) => Right(x)
       }
+    }
+    implicit class FOptionToFEither[F[_], T](val option: F[Option[T]]) extends AnyVal {
+      def orError(error: Error)(implicit M:Monad[F]): F[Either[ErrorList, T]] =
+        option.map(x => x.orError(error))
     }
   }
 }

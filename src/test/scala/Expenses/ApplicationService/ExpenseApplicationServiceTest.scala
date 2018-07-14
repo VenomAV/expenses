@@ -39,7 +39,7 @@ class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAnd
 
       newState should equal(state)
       result should matchPattern {
-        case Left(NonEmptyList("Unable to find employee", _)) =>
+        case Left(NonEmptyList(s, _)) if s.toString.startsWith("Unable to find employee ") =>
       }
     }
   }
