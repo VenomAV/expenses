@@ -5,6 +5,7 @@ import java.util.UUID
 import Expenses.Model.Employee
 import Expenses.Model.Employee.EmployeeId
 import Expenses.Repositories.EmployeeRepository
+import Expenses.Utils.ErrorManagement.ErrorList
 import cats.Monad
 import cats.syntax.flatMap._
 import cats.syntax.functor._
@@ -25,8 +26,14 @@ abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F])
       val sut = createRepositoryWith(List(Employee(id, name, surname)))
 
       run(sut.get(id)) should matchPattern {
-        case Some(Employee(`id`, `name`, `surname`)) =>
+        case Right(Employee(`id`, `name`, `surname`)) =>
       }
+    }
+    it("should return error when employee is missing") {
+      val id = UUID.randomUUID()
+      val sut = createRepositoryWith(List())
+
+      run(sut.get(id)) should be(Left(ErrorList.of(s"Unable to find employee $id")))
     }
   }
   describe("save") {
@@ -39,7 +46,7 @@ abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F])
         _ <- sut.save(Employee(id, s"Andrea $id", s"Vallotti $id"))
         employee <- sut.get(id)
       } yield employee) should matchPattern {
-        case Some(Employee(_, _, _)) =>
+        case Right(Employee(_, _, _)) =>
       }
     }
   }

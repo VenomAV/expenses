@@ -65,5 +65,11 @@ object ErrorManagement {
       def rightT()(implicit M:Monad[F]): EitherT[F, ErrorList, T] =
         EitherT.right[ErrorList](any)
     }
+    implicit class FEitherToEitherT[F[_], E, T](val any: F[Either[E, T]]) extends AnyVal {
+      def toEitherT()(implicit M:Monad[F]): EitherT[F, E, T] = EitherT(any)
+    }
+    implicit class ThrowableToErrorList(val throwable: Throwable) extends AnyVal {
+      def toError : ErrorList = ErrorList.of(throwable.getMessage)
+    }
   }
 }

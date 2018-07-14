@@ -59,12 +59,11 @@ class ExpenseApplicationServiceTest extends FunSpec with Matchers with BeforeAnd
     it("should return error when expense sheet is missing") {
       val expense = TravelExpense(Money(1, "EUR"), new Date(), "Florence", "Barcelona")
       val state = TestState(List(), List(), List())
-      val (newState, result) = runAddExpenseTo(expense, UUID.randomUUID(), state)
+      val id = UUID.randomUUID()
+      val (newState, result) = runAddExpenseTo(expense, id, state)
 
       newState should equal(state)
-      result should matchPattern {
-        case Left(NonEmptyList("Unable to find expense sheet", _)) =>
-      }
+      result should be(Left(NonEmptyList.of(s"Unable to find expense sheet $id")))
     }
     it("should not add an expense to a claimed expense sheet") {
       val employee = Employee(UUID.randomUUID(), "A", "V")

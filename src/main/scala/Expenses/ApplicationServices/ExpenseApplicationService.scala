@@ -19,9 +19,9 @@ object ExpenseApplicationService {
                     er: EmployeeRepository[F],
                     esr: ExpenseSheetRepository[F]) : F[ApplicationResult[Unit]] =
     (for {
-      employee <- er.get(id).orErrorT(s"Unable to find employee $id")
+      employee <- er.get(id).toEitherT
       openExpenseSheet <- ExpenseService.openFor(employee).toEitherT[F]
-      result <- esr.save(openExpenseSheet).rightT
+      result <- esr.save(openExpenseSheet).toEitherT
     } yield result).value
 
   def addExpenseTo[F[_]](expense: Expense, id: ExpenseSheetId)
@@ -30,7 +30,7 @@ object ExpenseApplicationService {
     (for {
       openExpenseSheet <- getOpenExpenseSheet[F](id)
       newOpenExpenseSheet <- ExpenseService.addExpenseTo(expense, openExpenseSheet).toEitherT[F]
-      result <- esr.save(newOpenExpenseSheet).rightT
+      result <- esr.save(newOpenExpenseSheet).toEitherT
     } yield result).value
 
   def claim[F[_]](id: ExpenseSheetId)
@@ -41,15 +41,15 @@ object ExpenseApplicationService {
       openExpenseSheet <- getOpenExpenseSheet[F](id)
       pair <- ExpenseService.claim(openExpenseSheet).toEitherT[F]
       (claimedExpenseSheet, pendingClaim) = pair
-      _ <- esr.save(claimedExpenseSheet).rightT
-      _ <- cr.save(pendingClaim).rightT
+      _ <- esr.save(claimedExpenseSheet).toEitherT
+      _ <- cr.save(pendingClaim).toEitherT
     } yield ()).value
 
   private def getOpenExpenseSheet[F[_]](id: ExpenseSheetId)
                                        (implicit M:Monad[F],
                                         esr: ExpenseSheetRepository[F]): EitherT[F, ErrorList, OpenExpenseSheet] =
     for {
-      expenseSheet <- esr.get(id).orErrorT("Unable to find expense sheet")
+      expenseSheet <- esr.get(id).toEitherT
       openExpenseSheet <- tryCastTo[OpenExpenseSheet](expenseSheet,s"$id is not an open expense sheet").toEitherT[F]
     } yield openExpenseSheet
 
