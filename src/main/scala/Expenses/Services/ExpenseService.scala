@@ -1,16 +1,13 @@
 package Expenses.Services
 
 import Expenses.Model._
-import Expenses.Utils.ErrorManagement.{ApplicationResult, ValidationResult}
+import Expenses.Utils.ErrorManagement.ValidationResult
 import cats.data.NonEmptyList
 import cats.implicits._
 
 object ExpenseService {
   def openFor(employee: Employee): ValidationResult[OpenExpenseSheet] =
     ExpenseSheet.createOpen(employee, List[Expense]())
-
-  def openForEither(employee: Employee): ApplicationResult[OpenExpenseSheet] =
-    openFor(employee).toEither
 
   def addExpenseTo(expense: Expense, expenseSheet: OpenExpenseSheet): ValidationResult[OpenExpenseSheet] =
     ExpenseSheet.createOpen(expenseSheet.id, expenseSheet.employee, expenseSheet.expenses :+ expense)
