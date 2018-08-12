@@ -2,16 +2,14 @@ package Expenses.ApplicationServices
 
 import Expenses.Model.Employee.EmployeeId
 import Expenses.Model.ExpenseSheet.ExpenseSheetId
-import Expenses.Model.{Expense, OpenExpenseSheet}
+import Expenses.Model.{Expense, ExpenseSheet, OpenExpenseSheet}
 import Expenses.Repositories.{ClaimRepository, EmployeeRepository, ExpenseSheetRepository}
 import Expenses.Services.ExpenseService
 import Expenses.Utils.ErrorManagement.implicits._
-import Expenses.Utils.ErrorManagement.{ApplicationResult, Error, ErrorList}
+import Expenses.Utils.ErrorManagement.{ApplicationResult, ErrorList}
 import cats._
-import cats.implicits._
 import cats.data.EitherT
-
-import scala.reflect.ClassTag
+import cats.implicits._
 
 object ExpenseApplicationService {
   def openFor[F[_]](id: EmployeeId)
@@ -50,11 +48,11 @@ object ExpenseApplicationService {
                                         esr: ExpenseSheetRepository[F]): EitherT[F, ErrorList, OpenExpenseSheet] =
     for {
       expenseSheet <- esr.get(id).toEitherT
-      openExpenseSheet <- tryCastTo[OpenExpenseSheet](expenseSheet,s"$id is not an open expense sheet").toEitherT[F]
+      openExpenseSheet <- toOpenExpenseSheet(expenseSheet).toEitherT[F]
     } yield openExpenseSheet
 
-  private def tryCastTo[A : ClassTag](a: Any, error: Error) : ApplicationResult[A] = a match {
-    case b: A => Right(b)
-    case _ => Left(ErrorList.of(error))
+  private def toOpenExpenseSheet(es: ExpenseSheet) : ApplicationResult[OpenExpenseSheet] = es match {
+    case b: OpenExpenseSheet => Right(b)
+    case _ => Left(ErrorList.of(s"${es.id} is not an open expense sheet"))
   }
 }
