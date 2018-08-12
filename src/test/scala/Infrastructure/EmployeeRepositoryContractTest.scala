@@ -21,13 +21,11 @@ abstract class EmployeeRepositoryContractTest[F[_]](implicit M:Monad[F])
   describe("get") {
     it("should retrieve existing element") {
       val id = UUID.randomUUID()
-      val name = s"Andrea $id"
-      val surname = s"Vallotti $id"
+      val name = s"A $id"
+      val surname = s"V $id"
       val sut = createRepositoryWith(List(Employee(id, name, surname)))
 
-      run(sut.get(id)) should matchPattern {
-        case Right(Employee(`id`, `name`, `surname`)) =>
-      }
+      run(sut.get(id)) should be(Right(Employee(id, name, surname)))
     }
     it("should return error when employee is missing") {
       val id = UUID.randomUUID()

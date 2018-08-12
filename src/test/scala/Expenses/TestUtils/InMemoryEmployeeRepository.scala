@@ -10,7 +10,9 @@ import cats.data.State
 
 class InMemoryEmployeeRepository extends EmployeeRepository[Test] {
   override def get(id: EmployeeId): Test[ApplicationResult[Employee]] =
-    State.get.map(_.employees.find(_.id == id).orError(s"Unable to find employee $id"))
+    State {
+      state => (state, state.employees.find(_.id == id).orError(s"Unable to find employee $id"))
+    }
 
   override def save(employee: Employee): Test[ApplicationResult[Unit]] =
     State {
