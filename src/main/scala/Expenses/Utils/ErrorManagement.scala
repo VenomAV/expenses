@@ -2,7 +2,7 @@ package Expenses.Utils
 
 import java.util.{Calendar, Date}
 
-import cats.MonadError
+import cats.ApplicativeError
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, ValidatedNel}
 import cats.implicits.catsSyntaxValidatedId
@@ -37,10 +37,10 @@ object ErrorManagement {
     }
 
   object implicits {
-    implicit class ValidationResultToMonadError[A](val vr: Validated[A]) extends AnyVal {
-      def orRaiseError[F[_]](implicit ME:MonadError[F, Throwable]): F[A] = vr match {
-        case Valid(x) => ME.pure(x)
-        case Invalid(nel: NonEmptyList[String]) => ME.raiseError(new java.lang.Error(nel.toList.mkString(", ")))
+    implicit class ValidationResultToApplicativeError[A](val vr: Validated[A]) extends AnyVal {
+      def orRaiseError[F[_]](implicit AE:ApplicativeError[F, Throwable]): F[A] = vr match {
+        case Valid(x) => AE.pure(x)
+        case Invalid(nel: NonEmptyList[String]) => AE.raiseError(new java.lang.Error(nel.toList.mkString(", ")))
       }
     }
   }
