@@ -1,5 +1,6 @@
 package Expenses.ApplicationServices
 
+import Expenses.Model.Claim.ClaimId
 import Expenses.Model.Employee.EmployeeId
 import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model.{Expense, ExpenseSheet, OpenExpenseSheet}
@@ -12,12 +13,12 @@ object ExpenseApplicationService {
   def openFor[F[_]](id: EmployeeId)
                    (implicit ME:MonadError[F, Throwable],
                     er: EmployeeRepository[F],
-                    esr: ExpenseSheetRepository[F]) : F[Unit] =
+                    esr: ExpenseSheetRepository[F]) : F[ExpenseSheetId] =
     for {
       employee <- er.get(id)
       openExpenseSheet <- ExpenseService.openFor(employee)
-      result <- esr.save(openExpenseSheet)
-    } yield result
+      _ <- esr.save(openExpenseSheet)
+    } yield openExpenseSheet.id
 
   def addExpenseTo[F[_]](expense: Expense, id: ExpenseSheetId)
                         (implicit ME:MonadError[F, Throwable],
@@ -31,14 +32,14 @@ object ExpenseApplicationService {
   def claim[F[_]](id: ExpenseSheetId)
                  (implicit ME:MonadError[F, Throwable],
                   esr: ExpenseSheetRepository[F],
-                  cr: ClaimRepository[F]) : F[Unit] =
+                  cr: ClaimRepository[F]) : F[ClaimId] =
     for {
       openExpenseSheet <- getOpenExpenseSheet[F](id)
       pair <- ExpenseService.claim(openExpenseSheet)
       (claimedExpenseSheet, pendingClaim) = pair
       _ <- esr.save(claimedExpenseSheet)
       _ <- cr.save(pendingClaim)
-    } yield ()
+    } yield pendingClaim.id
 
   private def getOpenExpenseSheet[F[_]](id: ExpenseSheetId)
                                        (implicit ME:MonadError[F, Throwable],
@@ -48,8 +49,10 @@ object ExpenseApplicationService {
       openExpenseSheet <- toOpenExpenseSheet(expenseSheet)
     } yield openExpenseSheet
 
-  private def toOpenExpenseSheet[F[_]](es: ExpenseSheet)(implicit ME:MonadError[F, Throwable]) : F[OpenExpenseSheet] = es match {
-    case b: OpenExpenseSheet => ME.pure(b)
-    case _ => ME.raiseError(new Error(s"${es.id} is not an open expense sheet"))
-  }
+  private def toOpenExpenseSheet[F[_]](es: ExpenseSheet)
+                                      (implicit ME:MonadError[F, Throwable]) : F[OpenExpenseSheet] =
+    es match {
+      case b: OpenExpenseSheet => ME.pure(b)
+      case _ => ME.raiseError(new Error(s"${es.id} is not an open expense sheet"))
+    }
 }
