@@ -48,7 +48,7 @@ class DoobieEmployeeRepositoryMETest extends EmployeeRepositoryMEContractTest[Co
 
   override protected def afterEach(): Unit = {
     super.afterEach()
-    employeeIds.map(deleteEmployee)
+    cleanUp(employeeIds)
   }
 
   override def createRepositoryWith(employees: List[Employee]): EmployeeRepositoryME[ConnectionIO] = {

@@ -5,22 +5,11 @@ import Expenses.Model.Employee.EmployeeId
 import Expenses.Repositories.{EmployeeRepository, EmployeeRepositoryME}
 import Expenses.TestUtils.AcceptanceTestUtils.{Test, TestME, TestState}
 import Expenses.TestUtils.{InMemoryEmployeeMERepository, InMemoryEmployeeRepository}
-import Expenses.Utils.ErrorManagement.ErrorList
 import Infrastructure.{EmployeeRepositoryContractTest, EmployeeRepositoryMEContractTest}
-import org.scalatest.BeforeAndAfter
-import cats.data.StateT._
-import cats.data._
 import cats.implicits._
 
-class InMemoryEmployeeRepositoryTest extends EmployeeRepositoryContractTest[Test] with BeforeAndAfter{
+class InMemoryEmployeeRepositoryTest extends EmployeeRepositoryContractTest[Test] {
   implicit var state : TestState = _
-
-  before {
-    state = TestState(
-      List(),
-      List(),
-      List())
-  }
 
   override def createRepositoryWith(employees: List[Employee]): EmployeeRepository[Test] = {
     state = TestState(
@@ -35,15 +24,8 @@ class InMemoryEmployeeRepositoryTest extends EmployeeRepositoryContractTest[Test
   override def cleanUp(employeeIds: List[EmployeeId]): Unit = ()
 }
 
-class InMemoryEmployeeRepositoryMETest extends EmployeeRepositoryMEContractTest[TestME] with BeforeAndAfter{
+class InMemoryEmployeeRepositoryMETest extends EmployeeRepositoryMEContractTest[TestME] {
   implicit var state : TestState = _
-
-  before {
-    state = TestState(
-      List(),
-      List(),
-      List())
-  }
 
   override def createRepositoryWith(employees: List[Employee]): EmployeeRepositoryME[TestME] = {
     state = TestState(
