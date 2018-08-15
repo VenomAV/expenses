@@ -109,19 +109,19 @@ class DoobieExpenseSheetRepositoryME(implicit ME: MonadError[ConnectionIO, Throw
         else update(expenseSheet)
     } yield insertOrUpdate
 
-  private def update(expenseSheet: ExpenseSheet): ConnectionIO[Int] =
+  private def update(expenseSheet: ExpenseSheet): ConnectionIO[Unit] =
     sql"""update expensesheets set type=${expenseSheetType(expenseSheet)},
           employeeid=${expenseSheet.employee.id}, expenses=${expenseSheet.expenses}
           where id=${expenseSheet.id}"""
-      .update.run
+      .update.run.map(_ => ())
 
-  private def insert(expenseSheet: ExpenseSheet): ConnectionIO[Int] =
+  private def insert(expenseSheet: ExpenseSheet): ConnectionIO[Unit] =
     sql"""insert into expensesheets (id, type, employeeid, expenses)
           values (${expenseSheet.id}, ${expenseSheetType(expenseSheet)},
             ${expenseSheet.employee.id}, ${expenseSheet.expenses})"""
-    .update.run
+    .update.run.map(_ => ())
 
-  private def error(errorMessage: String): ConnectionIO[Int] =
+  private def error(errorMessage: String): ConnectionIO[Unit] =
     ME.raiseError(new IllegalArgumentException(errorMessage))
 
   private def expenseSheetType(expenseSheet: ExpenseSheet) : ExpenseSheetType = expenseSheet match {
