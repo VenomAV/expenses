@@ -6,8 +6,9 @@ import Expenses.Model.{Expense, ExpenseSheet, OpenExpenseSheet}
 import Expenses.Repositories._
 import Expenses.Services.ExpenseService
 import Expenses.Utils.ErrorManagement.implicits._
-import cats._
-import cats.implicits._
+import cats.MonadError
+import cats.implicits.toFlatMapOps
+import cats.implicits.toFunctorOps
 
 object ExpenseApplicationService {
   def openFor[F[_]](id: EmployeeId)
@@ -16,7 +17,7 @@ object ExpenseApplicationService {
                     esr: ExpenseSheetRepository[F]) : F[Unit] =
     for {
       employee <- er.get(id)
-      openExpenseSheet <- ExpenseService.openFor(employee).orRaiseError(ME)
+      openExpenseSheet <- ExpenseService.openFor(employee).orRaiseError
       result <- esr.save(openExpenseSheet)
     } yield result
 
@@ -25,7 +26,7 @@ object ExpenseApplicationService {
                          esr: ExpenseSheetRepository[F]) : F[Unit] =
     for {
       openExpenseSheet <- getOpenExpenseSheet[F](id)
-      newOpenExpenseSheet <- ExpenseService.addExpenseTo(expense, openExpenseSheet).orRaiseError(ME)
+      newOpenExpenseSheet <- ExpenseService.addExpenseTo(expense, openExpenseSheet).orRaiseError
       result <- esr.save(newOpenExpenseSheet)
     } yield result
 
@@ -35,7 +36,7 @@ object ExpenseApplicationService {
                   cr: ClaimRepository[F]) : F[Unit] =
     for {
       openExpenseSheet <- getOpenExpenseSheet[F](id)
-      pair <- ExpenseService.claim(openExpenseSheet).orRaiseError(ME)
+      pair <- ExpenseService.claim(openExpenseSheet).orRaiseError
       (claimedExpenseSheet, pendingClaim) = pair
       _ <- esr.save(claimedExpenseSheet)
       _ <- cr.save(pendingClaim)
@@ -46,7 +47,7 @@ object ExpenseApplicationService {
                                         esr: ExpenseSheetRepository[F]): F[OpenExpenseSheet] =
     for {
       expenseSheet <- esr.get(id)
-      openExpenseSheet <- toOpenExpenseSheet(expenseSheet)(ME)
+      openExpenseSheet <- toOpenExpenseSheet(expenseSheet)
     } yield openExpenseSheet
 
   private def toOpenExpenseSheet[F[_]](es: ExpenseSheet)(implicit ME:MonadError[F, Throwable]) : F[OpenExpenseSheet] = es match {

@@ -5,7 +5,7 @@ import java.util.{Calendar, Date}
 import cats.MonadError
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{NonEmptyList, ValidatedNel}
-import cats.implicits._
+import cats.implicits.catsSyntaxValidatedId
 
 object ErrorManagement {
   type Validated[A] = ValidatedNel[String, A]
