@@ -5,16 +5,12 @@ import Expenses.Model.ExpenseSheet.ExpenseSheetId
 import Expenses.Model.{Employee, ExpenseSheet}
 import Expenses.Repositories.{EmployeeRepository, ExpenseSheetRepository}
 import Infrastructure.Repositories.{DoobieEmployeeRepository, DoobieExpenseSheetRepository}
-import cats.effect.{Async, IO}
+import cats.effect.IO
 import doobie.free.connection.ConnectionIO
-import doobie.util.transactor.Transactor
-import doobie.util.transactor.Transactor.Aux
 import doobie.implicits._
 import doobie.postgres.implicits._
-
-object BaseDoobieTest {
-  implicit val M = Async[ConnectionIO]
-}
+import doobie.util.transactor.Transactor
+import doobie.util.transactor.Transactor.Aux
 
 trait BaseDoobieTest {
   implicit var xa: Aux[IO, Unit] = _
@@ -55,13 +51,4 @@ trait BaseDoobieTest {
   }
 
   def run[A](toBeExecuted: ConnectionIO[A]): A = toBeExecuted.transact(xa).unsafeRunSync
-
-  def existExpenseSheet(id: ExpenseSheetId): ConnectionIO[Boolean] =
-    sql"select 1 from expensesheets where id=$id"
-      .query[Int]
-      .option
-      .map({
-        case None => false
-        case _ => true
-      })
 }
